@@ -1,0 +1,13 @@
+.organization-unit {
+  width: 150px;
+  height: 70px;
+  padding: 16px;
+  display: flex;
+
+  .name {
+    color: white;
+    font-family: sans-serif;
+    margin: auto;
+    text-align: center;
+  }
+}
