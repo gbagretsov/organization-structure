@@ -4,6 +4,7 @@ import {Color} from './model/color';
 import StyleConstants from './constants/style-constants';
 import styleConstants from './constants/style-constants';
 import {MouseButton} from './constants/mouse-button';
+import {OrganizationStructureProvider} from './organization-structure-provider';
 
 @Component({
   selector: 'app-root',
@@ -27,54 +28,7 @@ export class AppComponent implements OnInit {
 
 
   ngOnInit() {
-    this.organizationCells = AppComponent.getInitialOrganizationCells();
-  }
-
-  private static getInitialOrganizationCells(): (IOrganizationCell | null)[][] {
-    const headCell: IOrganizationCell = {
-      name: 'Руководитель',
-      color: Color.VIOLET,
-      parents: [],
-      children: [],
-    };
-    const buildingDptCell: IOrganizationCell = {
-      name: 'Управление строительства',
-      color: Color.LIGHT_BLUE,
-      parents: [],
-      children: [],
-    };
-    const financesDptCell: IOrganizationCell = {
-      name: 'Финансовое управление',
-      color: Color.LIGHT_BLUE,
-      parents: [],
-      children: [],
-    };
-
-    this.addChild(headCell, buildingDptCell);
-    this.addChild(headCell, financesDptCell);
-
-    return [
-      [headCell, null],
-      [buildingDptCell, financesDptCell],
-    ];
-  }
-
-  private static addChild(parentCell: IOrganizationCell, childCell: IOrganizationCell): void {
-    parentCell.children.push(childCell);
-    childCell.parents.push(parentCell);
-  }
-
-  private static removeChild(parentCell: IOrganizationCell, childCell: IOrganizationCell): void {
-    parentCell.children.splice(parentCell.children.indexOf(childCell), 1);
-    childCell.parents.splice(childCell.parents.indexOf(parentCell), 1);
-  }
-
-  private static addOrRemoveChild(parentCell: IOrganizationCell, childCell: IOrganizationCell) {
-    if (parentCell.children.indexOf(childCell) !== -1) {
-      AppComponent.removeChild(parentCell as IOrganizationCell, childCell);
-    } else {
-      AppComponent.addChild(parentCell as IOrganizationCell, childCell);
-    }
+    this.organizationCells = OrganizationStructureProvider.getInitialOrganizationCells();
   }
 
   /**
@@ -198,7 +152,7 @@ export class AppComponent implements OnInit {
       cellHtmlElement.style.zIndex = '';
     } else if (event.button === MouseButton.RIGHT) {
       if (this.parentCandidateCell && this.childCandidateCell) {
-        AppComponent.addOrRemoveChild(this.parentCandidateCell as IOrganizationCell, this.childCandidateCell);
+        OrganizationStructureProvider.addOrRemoveChild(this.parentCandidateCell as IOrganizationCell, this.childCandidateCell);
       }
       this.initiallySelectedCellForLinkCreation = null;
       this.parentCandidateCell = null;
