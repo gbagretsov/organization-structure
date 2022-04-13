@@ -1,5 +1,13 @@
 <table class="organization-units-table">
+  <tr>
+    <th class="empty-corner-cell"></th>
+    <th *ngFor="let cell of organizationCells[0]; let colIndex = index"
+        class="structures-header-cell">{{colIndex + 1}}</th>
+    <th class="add-structures-button" (click)="addStructures()">Добавить структуры</th>
+  </tr>
+
   <tr *ngFor="let row of organizationCells; let rowIndex = index">
+    <th class="levels-header-cell">{{rowIndex + 1}}</th>
     <ng-container *ngFor="let cell of row; let colIndex = index">
       <td>
         <app-organization-cell *ngIf="cell"
@@ -9,7 +17,15 @@
                                [hasParents]="cell.parents.length > 0"></app-organization-cell>
         <div class="linking-line" *ngIf="cell && cell.children.length > 0"
                                   [ngStyle]="getLinkingLineStyleAttributes(cell, rowIndex, colIndex)"></div>
+        <button class="add-organization-structure-cell"
+                *ngIf="!cell"
+                (click)="addOrganizationCell(rowIndex, colIndex)">+</button>
       </td>
     </ng-container>
   </tr>
+
+  <tr>
+    <th class="add-level-button" (click)="addLevel()">Добавить уровень</th>
+  </tr>
+
 </table>

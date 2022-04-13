@@ -39,7 +39,7 @@ export class AppComponent implements OnInit {
     this.addChild(headCell, financesDptCell);
 
     return [
-      [headCell],
+      [headCell, null],
       [buildingDptCell, financesDptCell],
     ];
   }
@@ -89,5 +89,23 @@ export class AppComponent implements OnInit {
       left: `${left}px`,
       width: `${width}px`,
     }
+  }
+
+  addLevel() {
+    this.organizationCells.push(new Array(this.organizationCells[0].length));
+  }
+
+  addStructures() {
+    this.organizationCells.forEach(level => level.push(null));
+  }
+
+  addOrganizationCell(rowIndex: number, colIndex: number) {
+    const name = prompt('Введите название структуры') as string;
+    this.organizationCells[rowIndex][colIndex] = {
+      name,
+      color: Color.LIGHT_BLUE,
+      parents: [],
+      children: [],
+    };
   }
 }

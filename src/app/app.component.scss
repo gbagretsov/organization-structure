@@ -2,11 +2,46 @@
 
 .organization-units-table {
   border-spacing: $gap_between_cells;
+  color: white;
+  font-family: sans-serif;
 
   td {
     min-width: $cell_width;
+    min-height: $cell_height;
+    height: $cell_height;
     position: relative;
     padding: 0;
+    text-align: center;
+  }
+
+  th {
+    padding: 6px;
+  }
+
+  .empty-corner-cell,
+  .add-structures-button,
+  .add-level-button {
+    background-color: #87239e;
+    font-size: 0.7em;
+  }
+
+  .add-structures-button,
+  .add-level-button {
+    cursor: pointer;
+  }
+
+  .add-level-button {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    height: 90px;
+  }
+
+  .structures-header-cell {
+    background-color: #37a7cc;
+  }
+
+  .levels-header-cell {
+    background-color: #d1adf7;
   }
 }
 
@@ -15,4 +50,21 @@
   height: $linking_line_width;
   position: absolute;
   bottom: ($linking_line_width + $gap_between_cells) / -2;
+}
+
+.add-organization-structure-cell {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: none;
+  border: 2px solid black;
+  cursor: pointer;
+
+  &:hover {
+    background: #ddd;
+  }
+
+  &:active {
+    background: #bbb;
+  }
 }
