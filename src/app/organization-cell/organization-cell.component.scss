@@ -23,6 +23,7 @@
     font-family: sans-serif;
     margin: auto;
     text-align: center;
+    user-select: none;
   }
 
   &.has-parents:before {

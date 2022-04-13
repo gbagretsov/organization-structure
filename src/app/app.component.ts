@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {IOrganizationCell} from './model/organization-cell';
 import {Color} from './model/color';
 import StyleConstants from './constants/style-constants';
+import styleConstants from './constants/style-constants';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,9 @@ export class AppComponent implements OnInit {
   private parentOrganizationCellToLink: IOrganizationCell | null = null;
   private colIndexToLink: number = 0;
   private rowIndexToLink: number = 0;
+
+  private draggedCell: IOrganizationCell | null = null;
+  private mouseStartPositionX: number = 0;
 
 
   ngOnInit() {
@@ -120,8 +124,37 @@ export class AppComponent implements OnInit {
     };
   }
 
-  handleOrganizationCellClick(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {
-    console.log(cell);
+  handleOrganizationCellPointerDown(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {
+    this.draggedCell = cell;
+    this.mouseStartPositionX = event.pageX;
+    const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
+    cellHtmlElement.style.zIndex = '1';
+  }
+
+  handleOrganizationCellPointerMove(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: PointerEvent) {
+    if (cell === this.draggedCell) {
+      const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
+      cellHtmlElement.style.left = `${event.pageX - this.mouseStartPositionX}px`;
+    }
+  }
+
+  handleOrganizationCellPointerUp(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: PointerEvent) {
+    const mouseMovementDiff = event.pageX - this.mouseStartPositionX;
+    const colIndexDiff = Math.round(mouseMovementDiff / (styleConstants.cellWidth + styleConstants.gapBetweenCells));
+    const newColIndex = colIndex + colIndexDiff;
+    if (newColIndex < this.organizationCells[rowIndex].length && newColIndex >= 0) {
+      this.organizationCells[rowIndex][colIndex] = this.organizationCells[rowIndex][newColIndex];
+      this.organizationCells[rowIndex][newColIndex] = cell;
+    }
+
+    this.draggedCell = null;
+    const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
+    cellHtmlElement.style.left = '';
+    cellHtmlElement.style.zIndex = '';
+  }
+
+  private static getOrganizationCellElementFromEventTarget(target: HTMLElement): HTMLElement {
+    return target.classList.contains('organization-unit') ? target : target.parentElement as HTMLElement;
   }
 
   handleOrganizationCellRightClick(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {

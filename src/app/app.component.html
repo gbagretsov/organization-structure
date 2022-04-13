@@ -15,7 +15,9 @@
                                [color]="cell.color"
                                [hasChildren]="cell.children.length > 0"
                                [hasParents]="cell.parents.length > 0"
-                               (click)="handleOrganizationCellClick(cell, rowIndex, colIndex, $event)"
+                               (pointerdown)="handleOrganizationCellPointerDown(cell, rowIndex, colIndex, $event)"
+                               (pointermove)="handleOrganizationCellPointerMove(cell, rowIndex, colIndex, $event)"
+                               (pointerup)="handleOrganizationCellPointerUp(cell, rowIndex, colIndex, $event)"
                                (contextmenu)="handleOrganizationCellRightClick(cell, rowIndex, colIndex, $event)"></app-organization-cell>
         <div class="linking-line" *ngIf="cell && cell.children.length > 0"
                                   [ngStyle]="getLinkingLineStyleAttributes(cell, rowIndex, colIndex)"></div>
