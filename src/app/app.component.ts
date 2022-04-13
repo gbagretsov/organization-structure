@@ -2,7 +2,6 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {IOrganizationCell} from './model/organization-cell';
 import {Color} from './model/color';
 import StyleConstants from './constants/style-constants';
-import styleConstants from './constants/style-constants';
 import {MouseButton} from './constants/mouse-button';
 import {OrganizationStructureProvider} from './organization-structure-provider';
 
@@ -139,7 +138,7 @@ export class AppComponent implements OnInit {
   handleOrganizationCellPointerUp(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: PointerEvent) {
     if (event.button === MouseButton.LEFT) {
       const mouseMovementDiff = event.pageX - this.mouseStartPositionX;
-      const colIndexDiff = Math.round(mouseMovementDiff / (styleConstants.cellWidth + styleConstants.gapBetweenCells));
+      const colIndexDiff = Math.round(mouseMovementDiff / (StyleConstants.cellWidth + StyleConstants.gapBetweenCells));
       const newColIndex = colIndex + colIndexDiff;
       if (newColIndex < this.organizationCells[rowIndex].length && newColIndex >= 0) {
         this.organizationCells[rowIndex][colIndex] = this.organizationCells[rowIndex][newColIndex];
