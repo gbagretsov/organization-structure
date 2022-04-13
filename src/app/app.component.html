@@ -15,12 +15,15 @@
                                [color]="cell.color"
                                [hasChildren]="cell.children.length > 0"
                                [hasParents]="cell.parents.length > 0"
+                               [isParentCandidate]="cell === parentCandidateCell"
+                               [isChildCandidate]="cell === childCandidateCell"
                                (pointerdown)="handleOrganizationCellPointerDown(cell, rowIndex, colIndex, $event)"
                                (pointermove)="handleOrganizationCellPointerMove(cell, rowIndex, colIndex, $event)"
                                (pointerup)="handleOrganizationCellPointerUp(cell, rowIndex, colIndex, $event)"
                                (contextmenu)="handleOrganizationCellRightClick(cell, rowIndex, colIndex, $event)"></app-organization-cell>
         <div class="linking-line" *ngIf="cell && cell.children.length > 0"
-                                  [ngStyle]="getLinkingLineStyleAttributes(cell, rowIndex, colIndex)"></div>
+                                  [ngStyle]="getLinkingLineStyleAttributesForAllChildren(cell, rowIndex, colIndex)"></div>
+        <div class="linking-line link-creation-line" #linkCreationLine *ngIf="cell && parentCandidateCell && cell === parentCandidateCell"></div>
         <button class="add-organization-structure-cell"
                 *ngIf="!cell"
                 (click)="addOrganizationCell(rowIndex, colIndex)">+</button>

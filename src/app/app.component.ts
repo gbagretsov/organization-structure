@@ -1,8 +1,9 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {IOrganizationCell} from './model/organization-cell';
 import {Color} from './model/color';
 import StyleConstants from './constants/style-constants';
 import styleConstants from './constants/style-constants';
+import {MouseButton} from './constants/mouse-button';
 
 @Component({
   selector: 'app-root',
@@ -12,12 +13,16 @@ import styleConstants from './constants/style-constants';
 export class AppComponent implements OnInit {
   organizationCells: (IOrganizationCell | null)[][] = [];
 
-  private linkModeActive: boolean = false;
-  private parentOrganizationCellToLink: IOrganizationCell | null = null;
-  private colIndexToLink: number = 0;
-  private rowIndexToLink: number = 0;
+  initiallySelectedCellForLinkCreation: IOrganizationCell | null = null;
+  private initiallySelectedCellRowIndexForLinkCreation: number = 0;
+  private initiallySelectedCellColIndexForLinkCreation: number = 0;
+
+  parentCandidateCell: IOrganizationCell | null = null;
+  childCandidateCell: IOrganizationCell | null = null;
+  @ViewChild('linkCreationLine') linkCreationLine!: ElementRef;
 
   private draggedCell: IOrganizationCell | null = null;
+
   private mouseStartPositionX: number = 0;
 
 
@@ -64,8 +69,16 @@ export class AppComponent implements OnInit {
     childCell.parents.splice(childCell.parents.indexOf(parentCell), 1);
   }
 
+  private static addOrRemoveChild(parentCell: IOrganizationCell, childCell: IOrganizationCell) {
+    if (parentCell.children.indexOf(childCell) !== -1) {
+      AppComponent.removeChild(parentCell as IOrganizationCell, childCell);
+    } else {
+      AppComponent.addChild(parentCell as IOrganizationCell, childCell);
+    }
+  }
+
   /**
-   * Returns style object for linking line element.
+   * Returns style object for linking line element that connects parent and all its children.
    *
    * Style object contains values for left and width properties.
    *
@@ -75,7 +88,7 @@ export class AppComponent implements OnInit {
    * @param rowIndex row index of parent cell
    * @param colIndex column index of parent cell
    */
-  getLinkingLineStyleAttributes(cell: IOrganizationCell, rowIndex: number, colIndex: number) {
+  getLinkingLineStyleAttributesForAllChildren(cell: IOrganizationCell, rowIndex: number, colIndex: number) {
     const possibleChildren = this.organizationCells[rowIndex + 1];
 
     let firstChildColIndex = possibleChildren.length;
@@ -93,13 +106,16 @@ export class AppComponent implements OnInit {
         lastChildColIndex = childColIndex;
       }
     });
+    return AppComponent.getLinkingLineStyleAttributes(colIndex, firstChildColIndex, lastChildColIndex);
+  }
 
+  private static getLinkingLineStyleAttributes(parentColIndex: number, firstChildColIndex: number, lastChildColIndex: number = firstChildColIndex) {
     const cellWidth = StyleConstants.cellWidth;
     const gapBetweenCells = StyleConstants.gapBetweenCells;
     const linkingLineWidth = StyleConstants.linkingLineWidth;
 
-    const left = (cellWidth - linkingLineWidth) / 2 - (cellWidth + gapBetweenCells) * Math.max(0, colIndex - firstChildColIndex);
-    const width = (cellWidth + gapBetweenCells) * (Math.max(lastChildColIndex, colIndex) - Math.min(firstChildColIndex, colIndex)) + linkingLineWidth;
+    const left = (cellWidth - linkingLineWidth) / 2 - (cellWidth + gapBetweenCells) * Math.max(0, parentColIndex - firstChildColIndex);
+    const width = (cellWidth + gapBetweenCells) * (Math.max(lastChildColIndex, parentColIndex) - Math.min(firstChildColIndex, parentColIndex)) + linkingLineWidth;
     return {
       left: `${left}px`,
       width: `${width}px`,
@@ -125,32 +141,69 @@ export class AppComponent implements OnInit {
   }
 
   handleOrganizationCellPointerDown(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {
-    this.draggedCell = cell;
     this.mouseStartPositionX = event.pageX;
-    const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
-    cellHtmlElement.style.zIndex = '1';
+    if (event.button === MouseButton.LEFT) {
+      this.draggedCell = cell;
+      const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
+      cellHtmlElement.style.zIndex = '1';
+    } else if (event.button === MouseButton.RIGHT) {
+      this.initiallySelectedCellForLinkCreation = cell;
+      this.initiallySelectedCellRowIndexForLinkCreation = rowIndex;
+      this.initiallySelectedCellColIndexForLinkCreation = colIndex;
+    }
   }
 
   handleOrganizationCellPointerMove(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: PointerEvent) {
     if (cell === this.draggedCell) {
       const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
       cellHtmlElement.style.left = `${event.pageX - this.mouseStartPositionX}px`;
+    } else {
+      // Cells should be in adjacent rows to be linked
+      if (this.initiallySelectedCellForLinkCreation && Math.abs(this.initiallySelectedCellRowIndexForLinkCreation - rowIndex) === 1) {
+        let linkCreationLineStyleAttributes: { left: string; width: string };
+        if (this.initiallySelectedCellRowIndexForLinkCreation < rowIndex) {
+          this.parentCandidateCell = this.initiallySelectedCellForLinkCreation;
+          this.childCandidateCell = cell;
+          linkCreationLineStyleAttributes = AppComponent.getLinkingLineStyleAttributes(this.initiallySelectedCellColIndexForLinkCreation, colIndex);
+        } else {
+          this.parentCandidateCell = cell;
+          this.childCandidateCell = this.initiallySelectedCellForLinkCreation;
+          linkCreationLineStyleAttributes = AppComponent.getLinkingLineStyleAttributes(colIndex, this.initiallySelectedCellColIndexForLinkCreation);
+        }
+        const linkCreationLineHtmlElement = this.linkCreationLine?.nativeElement as HTMLElement;
+        if (linkCreationLineHtmlElement) {
+          linkCreationLineHtmlElement.style.left = linkCreationLineStyleAttributes.left;
+          linkCreationLineHtmlElement.style.width = linkCreationLineStyleAttributes.width;
+        }
+      } else {
+        this.parentCandidateCell = null;
+        this.childCandidateCell = null;
+      }
     }
   }
 
   handleOrganizationCellPointerUp(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: PointerEvent) {
-    const mouseMovementDiff = event.pageX - this.mouseStartPositionX;
-    const colIndexDiff = Math.round(mouseMovementDiff / (styleConstants.cellWidth + styleConstants.gapBetweenCells));
-    const newColIndex = colIndex + colIndexDiff;
-    if (newColIndex < this.organizationCells[rowIndex].length && newColIndex >= 0) {
-      this.organizationCells[rowIndex][colIndex] = this.organizationCells[rowIndex][newColIndex];
-      this.organizationCells[rowIndex][newColIndex] = cell;
-    }
+    if (event.button === MouseButton.LEFT) {
+      const mouseMovementDiff = event.pageX - this.mouseStartPositionX;
+      const colIndexDiff = Math.round(mouseMovementDiff / (styleConstants.cellWidth + styleConstants.gapBetweenCells));
+      const newColIndex = colIndex + colIndexDiff;
+      if (newColIndex < this.organizationCells[rowIndex].length && newColIndex >= 0) {
+        this.organizationCells[rowIndex][colIndex] = this.organizationCells[rowIndex][newColIndex];
+        this.organizationCells[rowIndex][newColIndex] = cell;
+      }
 
-    this.draggedCell = null;
-    const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
-    cellHtmlElement.style.left = '';
-    cellHtmlElement.style.zIndex = '';
+      this.draggedCell = null;
+      const cellHtmlElement = AppComponent.getOrganizationCellElementFromEventTarget(event.target as HTMLElement);
+      cellHtmlElement.style.left = '';
+      cellHtmlElement.style.zIndex = '';
+    } else if (event.button === MouseButton.RIGHT) {
+      if (this.parentCandidateCell && this.childCandidateCell) {
+        AppComponent.addOrRemoveChild(this.parentCandidateCell as IOrganizationCell, this.childCandidateCell);
+      }
+      this.initiallySelectedCellForLinkCreation = null;
+      this.parentCandidateCell = null;
+      this.childCandidateCell = null;
+    }
   }
 
   private static getOrganizationCellElementFromEventTarget(target: HTMLElement): HTMLElement {
@@ -159,20 +212,5 @@ export class AppComponent implements OnInit {
 
   handleOrganizationCellRightClick(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {
     event.preventDefault();
-    if (this.linkModeActive) {
-      if (this.parentOrganizationCellToLink?.children.indexOf(cell) !== -1) {
-        AppComponent.removeChild(this.parentOrganizationCellToLink as IOrganizationCell, cell);
-      } else if (rowIndex === this.rowIndexToLink + 1) {
-        AppComponent.addChild(this.parentOrganizationCellToLink as IOrganizationCell, cell);
-      }
-
-      this.linkModeActive = false;
-      this.parentOrganizationCellToLink = null;
-    } else {
-      this.linkModeActive = true;
-      this.parentOrganizationCellToLink = cell;
-      this.rowIndexToLink = rowIndex;
-      this.colIndexToLink = colIndex;
-    }
   }
 }

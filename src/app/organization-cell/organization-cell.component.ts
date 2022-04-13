@@ -13,5 +13,7 @@ export class OrganizationCellComponent {
   @Input() color: Color = Color.LIGHT_BLUE;
   @Input() hasChildren: boolean = false;
   @Input() hasParents: boolean = false;
+  @Input() isParentCandidate: boolean = false;
+  @Input() isChildCandidate: boolean = false;
 
 }

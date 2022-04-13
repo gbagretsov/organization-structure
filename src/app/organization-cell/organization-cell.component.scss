@@ -35,4 +35,16 @@
     @include linking-line-edge;
     bottom: $gap_between_cells / -2;
   }
+
+  &.is-parent-candidate:after {
+    @include linking-line-edge;
+    background: $link_creation_line_background_color;
+    bottom: $gap_between_cells / -2;
+  }
+
+  &.is-child-candidate:before {
+    @include linking-line-edge;
+    background: $link_creation_line_background_color;
+    top: $gap_between_cells / -2;
+  }
 }
