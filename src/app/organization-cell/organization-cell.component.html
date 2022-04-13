@@ -1,3 +1,4 @@
-<div class="organization-unit" [ngStyle]="{'background-color': color}">
+<div class="organization-unit" [ngClass]="{'has-children': hasChildren, 'has-parents': hasParents}"
+                               [ngStyle]="{'background-color': color}">
   <div class="name">{{name}}</div>
 </div>

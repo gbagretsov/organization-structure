@@ -1,3 +1,18 @@
+@use 'src/app/constants/style-constants' as *;
+
 .organization-units-table {
-  border-spacing: 16px;
+  border-spacing: $gap_between_cells;
+
+  td {
+    min-width: $cell_width;
+    position: relative;
+    padding: 0;
+  }
+}
+
+.linking-line {
+  background-color: $linking_line_background_color;
+  height: $linking_line_width;
+  position: absolute;
+  bottom: ($linking_line_width + $gap_between_cells) / -2;
 }

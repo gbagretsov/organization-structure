@@ -1,13 +1,37 @@
+@use 'src/app/constants/style-constants' as *;
+
+@mixin linking-line-edge {
+  content: '';
+  display: inline-block;
+  list-style: none;
+  background: $linking_line_background_color;
+  width: $linking_line_width;
+  height: $gap_between_cells / 2;
+  position: absolute;
+  left: ($cell_width - $linking_line_width) / 2;
+}
+
 .organization-unit {
-  width: 150px;
-  height: 70px;
+  width: $cell_width;
+  height: $cell_height;
   padding: 16px;
   display: flex;
+  position: relative;
 
   .name {
     color: white;
     font-family: sans-serif;
     margin: auto;
     text-align: center;
+  }
+
+  &.has-parents:before {
+    @include linking-line-edge;
+    top: $gap_between_cells / -2;
+  }
+
+  &.has-children:after {
+    @include linking-line-edge;
+    bottom: $gap_between_cells / -2;
   }
 }

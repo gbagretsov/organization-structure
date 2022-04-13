@@ -1,7 +1,15 @@
 <table class="organization-units-table">
-  <tr *ngFor="let row of organizationCells">
-    <td *ngFor="let cell of row">
-      <app-organization-cell [name]="cell.name" [color]="cell.color"></app-organization-cell>
-    </td>
+  <tr *ngFor="let row of organizationCells; let rowIndex = index">
+    <ng-container *ngFor="let cell of row; let colIndex = index">
+      <td>
+        <app-organization-cell *ngIf="cell"
+                               [name]="cell.name"
+                               [color]="cell.color"
+                               [hasChildren]="cell.children.length > 0"
+                               [hasParents]="cell.parents.length > 0"></app-organization-cell>
+        <div class="linking-line" *ngIf="cell && cell.children.length > 0"
+                                  [ngStyle]="getLinkingLineStyleAttributes(cell, rowIndex, colIndex)"></div>
+      </td>
+    </ng-container>
   </tr>
 </table>
