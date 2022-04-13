@@ -11,6 +11,12 @@ import StyleConstants from './constants/style-constants';
 export class AppComponent implements OnInit {
   organizationCells: (IOrganizationCell | null)[][] = [];
 
+  private linkModeActive: boolean = false;
+  private parentOrganizationCellToLink: IOrganizationCell | null = null;
+  private colIndexToLink: number = 0;
+  private rowIndexToLink: number = 0;
+
+
   ngOnInit() {
     this.organizationCells = AppComponent.getInitialOrganizationCells();
   }
@@ -47,6 +53,11 @@ export class AppComponent implements OnInit {
   private static addChild(parentCell: IOrganizationCell, childCell: IOrganizationCell): void {
     parentCell.children.push(childCell);
     childCell.parents.push(parentCell);
+  }
+
+  private static removeChild(parentCell: IOrganizationCell, childCell: IOrganizationCell): void {
+    parentCell.children.splice(parentCell.children.indexOf(childCell), 1);
+    childCell.parents.splice(childCell.parents.indexOf(parentCell), 1);
   }
 
   /**
@@ -107,5 +118,28 @@ export class AppComponent implements OnInit {
       parents: [],
       children: [],
     };
+  }
+
+  handleOrganizationCellClick(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {
+    console.log(cell);
+  }
+
+  handleOrganizationCellRightClick(cell: IOrganizationCell, rowIndex: number, colIndex: number, event: MouseEvent) {
+    event.preventDefault();
+    if (this.linkModeActive) {
+      if (this.parentOrganizationCellToLink?.children.indexOf(cell) !== -1) {
+        AppComponent.removeChild(this.parentOrganizationCellToLink as IOrganizationCell, cell);
+      } else if (rowIndex === this.rowIndexToLink + 1) {
+        AppComponent.addChild(this.parentOrganizationCellToLink as IOrganizationCell, cell);
+      }
+
+      this.linkModeActive = false;
+      this.parentOrganizationCellToLink = null;
+    } else {
+      this.linkModeActive = true;
+      this.parentOrganizationCellToLink = cell;
+      this.rowIndexToLink = rowIndex;
+      this.colIndexToLink = colIndex;
+    }
   }
 }
